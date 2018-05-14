@@ -38,16 +38,15 @@ export default {
     this.$refs['ksh-canvas'].width  = this.provider.canvasWidth
     this.$refs['ksh-canvas'].height  = this.provider.canvasHeight
     
-      if(!this.provider.context) return
-      const ctx = this.provider.context
-      
-      ctx.beginPath()
-      ctx.moveTo( this.provider.canvasInnerSpace,this.provider.canvasInnerSpace)
-      ctx.lineTo( this.provider.canvasInnerSpace,this.provider.canvasHeight-this.provider.canvasInnerSpace)
-      ctx.lineTo( this.provider.canvasWidth-this.provider.canvasInnerSpace, this.provider.canvasHeight-this.provider.canvasInnerSpace)
-      ctx.strokeStyle = "#000000"
-      ctx.stroke()
+    if(!this.provider.context) return
+    const ctx = this.provider.context
     
+    ctx.beginPath()
+    ctx.moveTo( this.provider.canvasInnerSpace,this.provider.canvasInnerSpace)
+    ctx.lineTo( this.provider.canvasInnerSpace,this.provider.canvasHeight-this.provider.canvasInnerSpace)
+    ctx.lineTo( this.provider.canvasWidth-this.provider.canvasInnerSpace, this.provider.canvasHeight-this.provider.canvasInnerSpace)
+    ctx.strokeStyle = "#000000"
+    ctx.stroke()
   }
 }
 </script>

@@ -14,14 +14,13 @@
         :color="obj.color"
         :value="obj.val"
         :name="obj.name"
-        v-bind:key="index"
+        :idx="index"
+        :barChart="true"
+        :lineChart="false"
+        :dotChart="true"
+        v-bind:key="'b'+index"
       >
       </my-box>
-      <my-axis
-        v-for="(obj,index) in chartValues"
-        :value="obj.val"
-        v-bind:key="'a'+index"
-      ></my-axis>
     </ksh-canvas>
   </div>
 </template>
@@ -30,35 +29,19 @@
 import kshCanvas from './kshCanvas.vue'
 import MyAxis from './MyAxis.vue'
 import MyBox from './MyBox.vue'
+import MyLine from './MyLine.vue'
 
 export default {
   name: 'hello',
   components: {
     kshCanvas,
     MyAxis,
-    MyBox
+    MyBox,
+    MyLine
   },
   data () {
     return {
       chartValues: [
-        {val: 24, name: 'sv10', color: 'rgba(90, 120, 10, 0.5)'},
-        {val: 32, name: 'sv20', color: 'rgba(100, 110, 250, 0.5)'},
-        {val: 66, name: 'sv30', color: 'rgba(10, 140, 130, 0.5)'},
-        {val: 11, name: 'sv40', color: 'rgba(100, 180, 30, 0.5)'},
-        {val: 28, name: 'sv51', color: 'rgba(190, 120, 230, 0.5)'},
-        {val: 62, name: 'sv52', color: 'rgba(240, 220, 130, 0.5)'},
-        {val: 24, name: 'sv10', color: 'rgba(90, 120, 10, 0.5)'},
-        {val: 32, name: 'sv20', color: 'rgba(100, 110, 250, 0.5)'},
-        {val: 66, name: 'sv30', color: 'rgba(10, 140, 130, 0.5)'},
-        {val: 11, name: 'sv40', color: 'rgba(100, 180, 30, 0.5)'},
-        {val: 28, name: 'sv51', color: 'rgba(190, 120, 230, 0.5)'},
-        {val: 62, name: 'sv52', color: 'rgba(240, 220, 130, 0.5)'},
-        {val: 24, name: 'sv10', color: 'rgba(90, 120, 10, 0.5)'},
-        {val: 32, name: 'sv20', color: 'rgba(100, 110, 250, 0.5)'},
-        {val: 66, name: 'sv30', color: 'rgba(10, 140, 130, 0.5)'},
-        {val: 11, name: 'sv40', color: 'rgba(100, 180, 30, 0.5)'},
-        {val: 28, name: 'sv51', color: 'rgba(190, 120, 230, 0.5)'},
-        {val: 62, name: 'sv52', color: 'rgba(240, 220, 130, 0.5)'},
         {val: 24, name: 'sv10', color: 'rgba(90, 120, 10, 0.5)'},
         {val: 32, name: 'sv20', color: 'rgba(100, 110, 250, 0.5)'},
         {val: 66, name: 'sv30', color: 'rgba(10, 140, 130, 0.5)'},
@@ -86,10 +69,10 @@ export default {
     let dir = 1
     let selectedVal = Math.floor(Math.random * this.chartValues.length)
     setInterval(() => {
-      if (Math.random() > 0.395) dir *= -1;
-      if (Math.random() > 0.29) selectedVal = Math.floor(Math.random() * this.chartValues.length)
+      if (Math.random() > 0.695) dir *= -1;
+      if (Math.random() > 0.69) selectedVal = Math.floor(Math.random() * this.chartValues.length)
       if(!isNaN(selectedVal)){
-        this.chartValues[selectedVal].val = Math.min(Math.max(this.chartValues[selectedVal].val + dir * 10.1, 5), 95)
+        this.chartValues[selectedVal].val = Math.min(Math.max(this.chartValues[selectedVal].val + dir * 0.5, 5), 95)  
       }
     }, 1)
   }

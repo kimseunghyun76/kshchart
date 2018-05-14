@@ -40,24 +40,7 @@
       // The name
       name: {
         type: String,
-        default: 'SV'
-      },
-      // The value to display
-      idx: {
-        type: Number,
-        default: 0
-      },
-      barChart:{
-        type: Boolean,
-        default: false
-      },
-      lineChart:{
-        type: Boolean,
-        default: false
-      },
-      dotChart:{
-        type: Boolean,
-        default: false
+        defualt: 'SV'
       }
     },
     data () {
@@ -78,7 +61,7 @@
         //console.log(this.x1 + "," + percentWidthToPix(this.x1, ctx))
         //Turn start / end percentages into x,y , width, height in pixels
         const calculated = {
-          x: (percentWidthToPix(this.x1, ctx) + 50),
+          x: (percentWidthToPix(this.x1, ctx) + 50) ,
           y: percentHeightToPix(this.y1, ctx),
           w: percentWidthToPix(this.x2 - this.x1, ctx),
           h: percentHeightToPix(this.y2 - this.y1 , ctx)       
@@ -102,54 +85,13 @@
       // Calculate the new box. (Computed properties update on-demand.)
       const newBox = this.calculatedBox
 
-      //ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-
-      //Draw Bar
-      if(this.barChart){
-        ctx.beginPath()
-        // Clear the old area from the previous render.
-        ctx.clearRect(oldBox.x, oldBox.y, oldBox.w, oldBox.h-30)
-        // Clear the area for the next
-        ctx.clearRect(newBox.x , newBox.y, newBox.w, newBox.h)
-        // Draw the new rectangle.
-        ctx.rect(newBox.x, newBox.y, newBox.w, newBox.h)
-        ctx.fillStyle = this.color
-        ctx.fill()
-      }
-
-
-     //Draw Dot & text
-      if(this.dotChart){
-        ctx.beginPath()
-        ctx.arc(newBox.x + (newBox.w/2) , newBox.y+newBox.h, 5, 0, 2 * Math.PI, true)
-        ctx.strokeStyle = "rgba(255,0,0,0.7)"
-        ctx.stroke()
-      // Draw the text
-        ctx.fillStyle = '#000'
-        ctx.font = '18px Gothic'
-        ctx.textAlign = 'center'
-        ctx.fillText(Math.floor(this.value) +'%', (newBox.x + (newBox.w/2)), newBox.y+newBox.h+34)
-      }
-
-     //Draw Line
-      if(this.lineChart){
-        if(this.idx > 0 && this.idx< this.$parent.$children.length){
-          const lastbox = this.$parent.$children[this.idx - 1]
-          ctx.beginPath()
-          ctx.moveTo( lastbox.calculatedBox.x + (lastbox.calculatedBox.w/2) , lastbox.calculatedBox.y+lastbox.calculatedBox.h)
-          ctx.lineTo( newBox.x + (newBox.w/2) , newBox.y+newBox.h)
-          ctx.strokeStyle = "rgba(255,0,0,0.7)"
-          ctx.lineWidth = 2
-          ctx.stroke()
-        }
-      }
-//
-
-      // Draw the Name
-      ctx.clearRect(newBox.x , newBox.y+10, newBox.w, 150)
-      ctx.fillText(this.name, (newBox.x + (newBox.w/2)), newBox.y + 30)
-
+      ctx.beginPath()
+      ctx.arc(newBox.x + (newBox.w/2) , newBox.y+newBox.h, 5, 0, 2 * Math.PI, true)
+      ctx.strokeStyle = "#ff0000"
+      ctx.stroke()
       
+      console.log(this.$parent.$children)
+      //console.log(this.$parent.$children[this.$parent.$children.length - 1])
     }
   }
 </script>
