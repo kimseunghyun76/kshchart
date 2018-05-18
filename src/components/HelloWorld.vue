@@ -4,8 +4,10 @@
     <!-- These are the custom components we'll create -->
     <!-- Values for `my-box` are percentages of the width of the canvas. -->
     <!-- Each bar will take up an equal space of the canvas. -->
-    <ksh-canvas>
-      <my-box 
+    <ksh-canvas
+      :viewcount="viewcount"
+      >
+      <!-- <my-box 
         v-for="(obj,index) in chartValues"
         :x1="((index / chartValues.length) * 100)"
         :x2="((index / chartValues.length) * 100) + (100 / chartValues.length)"
@@ -20,46 +22,53 @@
         :dotChart="true"
         v-bind:key="'b'+index"
       >
-      </my-box>
+      </my-box> -->
     </ksh-canvas>
   </div>
 </template>
 
 <script>
 import kshCanvas from './kshCanvas.vue'
-import MyAxis from './MyAxis.vue'
-import MyBox from './MyBox.vue'
-import MyLine from './MyLine.vue'
 
 export default {
   name: 'hello',
   components: {
-    kshCanvas,
-    MyAxis,
-    MyBox,
-    MyLine
+    kshCanvas
   },
   data () {
     return {
+      viewcount:20,
       chartValues: [
-        {val: 24, name: 'sv10', color: 'rgba(90, 120, 10, 0.5)'},
-        {val: 32, name: 'sv20', color: 'rgba(100, 110, 250, 0.5)'},
-        {val: 66, name: 'sv30', color: 'rgba(10, 140, 130, 0.5)'},
-        {val: 11, name: 'sv40', color: 'rgba(100, 180, 30, 0.5)'},
-        {val: 28, name: 'sv51', color: 'rgba(190, 120, 230, 0.5)'},
-        {val: 62, name: 'sv52', color: 'rgba(240, 220, 130, 0.5)'},
-        {val: 24, name: 'sv10', color: 'rgba(90, 120, 10, 0.5)'},
-        {val: 32, name: 'sv20', color: 'rgba(100, 110, 250, 0.5)'},
-        {val: 66, name: 'sv30', color: 'rgba(10, 140, 130, 0.5)'},
-        {val: 11, name: 'sv40', color: 'rgba(100, 180, 30, 0.5)'},
-        {val: 28, name: 'sv51', color: 'rgba(190, 120, 230, 0.5)'},
-        {val: 62, name: 'sv52', color: 'rgba(240, 220, 130, 0.5)'},
-        {val: 24, name: 'sv10', color: 'rgba(90, 120, 10, 0.5)'},
-        {val: 32, name: 'sv20', color: 'rgba(100, 110, 250, 0.5)'},
-        {val: 66, name: 'sv30', color: 'rgba(10, 140, 130, 0.5)'},
-        {val: 11, name: 'sv40', color: 'rgba(100, 180, 30, 0.5)'},
-        {val: 28, name: 'sv51', color: 'rgba(190, 120, 230, 0.5)'},
-        {val: 62, name: 'sv52', color: 'rgba(240, 220, 130, 0.5)'}
+        {val: 124, name: '2017-04-01'},
+        {val: 322, name: '2017-04-02'},
+        {val: 536, name: '2017-04-03'},
+        {val: 151, name: '2017-04-04'},
+        {val: 268, name: '2017-04-05'},
+        {val: 672, name: '2017-04-06'},
+        {val: 204, name: '2017-04-07'},
+        {val: 45, name: '2017-04-08'},
+        {val: 4232, name: '2017-04-09'},
+        {val: 1832, name: '2017-04-10'},
+        {val: 224, name: '2017-04-11'},
+        {val: 392, name: '2017-04-12'},
+        {val: 576, name: '2017-04-13'},
+        {val: 611, name: '2017-04-14'},
+        {val: 298, name: '2017-04-15'},
+        {val: 62, name: '2017-04-16'},
+        {val: 224, name: '2017-04-17'},
+        {val: 832, name: '2017-04-18'},
+        {val: 382, name: '2017-04-19'},
+        {val: 832, name: '2017-04-20'},
+        {val: 274, name: '2017-04-21'},
+        {val: 232, name: '2017-04-22'},
+        {val: 656, name: '2017-04-23'},
+        {val: 411, name: '2017-04-24'},
+        {val: 28, name: '2017-04-25'},
+        {val: 362, name: '2017-04-26'},
+        {val: 24, name: '2017-04-27'},
+        {val: 832, name: '2017-04-28'},
+        {val: 1832, name: '2017-04-29'},
+        {val: 332, name: '2017-04-30'},
       ]
     }
   },
@@ -67,14 +76,18 @@ export default {
   // Not really important, just demonstrates that reactivity still works.
   mounted: function (){
     let dir = 1
-    let selectedVal = Math.floor(Math.random * this.chartValues.length)
-    setInterval(() => {
-      if (Math.random() > 0.695) dir *= -1;
-      if (Math.random() > 0.69) selectedVal = Math.floor(Math.random() * this.chartValues.length)
-      if(!isNaN(selectedVal)){
-        this.chartValues[selectedVal].val = Math.min(Math.max(this.chartValues[selectedVal].val + dir * 0.5, 5), 95)  
-      }
-    }, 1)
+    this.viewcount = 11
+    setInterval(() => { 
+        this.viewcount = Math.min(Math.max(Math.floor(Math.random() * this.chartValues.length), 5), this.chartValues.length-1) 
+    }, 1000)
+
+    // setInterval(() => {
+    //   if (Math.random() > 0.695) dir *= -1;
+    //   if (Math.random() > 0.69) selectedVal = Math.floor(Math.random() * this.chartValues.length)
+    //   if(!isNaN(selectedVal)){
+    //     this.chartValues[selectedVal].val = Math.min(Math.max(this.chartValues[selectedVal].val + dir * 0.5, 5), 95)  
+    //   }
+    // }, 1000)
   }
 }
 </script>
@@ -88,8 +101,8 @@ html, body {
 
 #app {
   position: relative;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   padding: 20px;
   box-sizing: border-box;
 }
