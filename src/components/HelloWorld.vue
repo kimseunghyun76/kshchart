@@ -1,29 +1,34 @@
 <template>
   <div class="hello">
-    <h2> Mcc Gateway Message Queue Status </h2>
     <!-- These are the custom components we'll create -->
     <!-- Values for `my-box` are percentages of the width of the canvas. -->
     <!-- Each bar will take up an equal space of the canvas. -->
-    <ksh-canvas
-      :viewcount="viewcount"
-      >
-      <!-- <my-box 
-        v-for="(obj,index) in chartValues"
-        :x1="((index / chartValues.length) * 100)"
-        :x2="((index / chartValues.length) * 100) + (100 / chartValues.length)"
-        :y1="100"
-        :y2="100-obj.val"
-        :color="obj.color"
-        :value="obj.val"
-        :name="obj.name"
-        :idx="index"
-        :barChart="true"
-        :lineChart="false"
-        :dotChart="true"
-        v-bind:key="'b'+index"
-      >
-      </my-box> -->
-    </ksh-canvas>
+
+    <div>
+      <div>
+        <h2> Mcc Gateway Message Queue Status </h2>
+      </div>
+      <div>
+        <ksh-canvas>
+          <!-- <my-box 
+            v-for="(obj,index) in chartValues"
+            :x1="((index / chartValues.length) * 100)"
+            :x2="((index / chartValues.length) * 100) + (100 / chartValues.length)"
+            :y1="100"
+            :y2="100-obj.val"
+            :color="obj.color"
+            :value="obj.val"
+            :name="obj.name"
+            :idx="index"
+            :barChart="true"
+            :lineChart="false"
+            :dotChart="true"
+            v-bind:key="'b'+index"
+          >
+          </my-box> -->
+        </ksh-canvas>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -75,11 +80,14 @@ export default {
   // Randomly selects a value to randomly increment or decrement every 16 ms.
   // Not really important, just demonstrates that reactivity still works.
   mounted: function (){
-    let dir = 1
-    this.viewcount = 11
-    setInterval(() => { 
-        this.viewcount = Math.min(Math.max(Math.floor(Math.random() * this.chartValues.length), 5), this.chartValues.length-1) 
-    }, 1000)
+    // let dir = 1
+    
+    // let selectedVal = Math.floor(Math.random * this.chartValues.length)
+    
+    // //this.viewcount = 11
+    // // setInterval(() => { 
+    // //     this.viewcount = Math.min(Math.max(Math.floor(Math.random() * this.chartValues.length), 5), this.chartValues.length-1) 
+    // // }, 10000)
 
     // setInterval(() => {
     //   if (Math.random() > 0.695) dir *= -1;
@@ -87,7 +95,7 @@ export default {
     //   if(!isNaN(selectedVal)){
     //     this.chartValues[selectedVal].val = Math.min(Math.max(this.chartValues[selectedVal].val + dir * 0.5, 5), 95)  
     //   }
-    // }, 1000)
+    // }, 1)
   }
 }
 </script>
@@ -105,5 +113,11 @@ html, body {
   width: 100%;
   padding: 20px;
   box-sizing: border-box;
+}
+
+input {
+  height: 40px;
+  font-size : 20px;
+  font-family : 'NanumGothic';
 }
 </style>

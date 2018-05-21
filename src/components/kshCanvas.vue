@@ -1,26 +1,49 @@
 <template>
   <div class="ksh-canvas-wrapper">
-    <canvas ref="ksh-canvas"></canvas>
+    <canvas 
+      ref="ksh-canvas"
+      v-on:mouseup="handleMouseUp"
+      v-on:mousedown="handleMouseDown"
+      v-on:mousemove="handleMouseMove"
+      v-on:mousewheel="doScroll"
+    ></canvas>
     <slot></slot>
   </div>
 </template>
-
 <script>
 export default {
-  props: {
-    // Start coordinates (percentage of canvas dimensions)
-    viewcount: {
-      type: Number,
-      default: 10
-    }
-  },
   data() {
     return { 
-      boxesStat:{
+      boxes:{
         max:0,
-        count:0
+        count:0,
+        viewcnt: 10,
+        line:{
+          strokeStyle:'#888888',
+          fillStyle:'rgba(190, 20, 0, 0.5)'
+        },
+        rect:{
+          strokeStyle:'#888888',
+          fillStyle:'rgba(190, 20, 0, 0.5)'
+        },
+        selected:{
+          index:-1,
+          x:0,
+          y:0,
+          rect:{
+            strokeStyle:'#888888',
+            fillStyle:'rgba(190, 20, 0, 0.5)'
+          },
+          line:{
+            strokeStyle:'#888888',
+            fillStyle:'rgba(190, 20, 0, 0.5)'
+          }
+        },
+        val:[]
       },
       canvas:{
+        spanx:5,
+        spany:10,
         context: null,
         w: 0,
         h: 0,
@@ -28,140 +51,260 @@ export default {
         sy: 0,
         sw: 0,
         sh: 0
+      },
+      mouse: {
+        down: false,
+        current:{
+          x: 0,
+          y: 0
+        },
+        previous: {
+          x: 0,
+          y: 0
+        }
       }
     }
   },
-  watch: {
-    viewcount: function (val){
-      if(!this.canvas.context) return
-      const ctx = this.canvas.context
+  mounted () {
+    this.canvas.context = this.$refs['ksh-canvas'].getContext('2d')
+    this.canvas.w = this.$refs['ksh-canvas'].parentElement.clientWidth
+    this.canvas.h = this.$refs['ksh-canvas'].parentElement.clientHeight
+    this.$refs['ksh-canvas'].width  = this.canvas.w
+    this.$refs['ksh-canvas'].height  = this.canvas.h
+    
+    this.boxes.count = this.$parent.chartValues.length
+    
+    //x축과 y축에 값을 넣기 위해서 여백 비율(%)을 줘야 함.
+    this.canvas.sx = this.canvas.w * (this.canvas.spanx / 100)
+    this.canvas.sy = this.canvas.h * (this.canvas.spany / 100)
+    this.canvas.sw = this.canvas.w - (this.canvas.sx * 2)
+    this.canvas.sh = this.canvas.h - (this.canvas.sy * 2)
 
-      /** X & Y Axis */
-      //x축과 y축에 값을 넣기 위해서 여백 비율(%)을 줘야 함.
-      const spanx = 5
-      const spany = 10
-      this.canvas.sx = this.canvas.w * (spanx / 100)
-      this.canvas.sy = this.canvas.h * (spany / 100)
-      this.canvas.sw = this.canvas.w - (this.canvas.sx * 2)
-      this.canvas.sh = this.canvas.h - (this.canvas.sy * 2)
-
-      let boxes = []
-      /** X & Y Axis */
-      this.boxesStat.count = this.$parent.chartValues.length
-      this.boxesStat.max = 0
-      this.$parent.chartValues.forEach((el,index) => {
-        if(this.boxesStat.count - index <= this.viewcount){
-          if(this.boxesStat.max < el.val){
-            this.boxesStat.max = el.val
-          }
-          boxes.push(  { v:el.val, name:el.name, x : null , y : null , w: null , h: null })
+    this.draw()
+  },
+  methods : {
+    handleMouseUp : function(evt){
+      this.mouse.down = false
+      
+      this.boxes.val.forEach((el,index) =>{
+        el.w = this.canvas.sw /this.boxes.viewcnt
+        el.x = (index*el.w) + this.canvas.sx
+        if(el.x < evt.pageX && evt.pageX < (el.x + el.w) ){
+          this.boxes.selected.index = index
+          
+          /** Clear Canvas and Draw X&Y Axis  */
+          this.clearchart()
+          /** Draw Bar Graph */
+          this.drawBarGraph()
+          return  
         }
       })
       
-      /** Clear Canvas  */
+      evt.preventDefault()
+    },
+    handleMouseDown : function(evt){
+      this.mouse.down = true
+      this.mouse.current = {
+        x: evt.pageX,
+        y: evt.pageY
+      }
+      evt.preventDefault()
+    },
+    handleMouseMove : function(evt){
+      if(this.mouse.down){
+        this.mouse.previous = {
+          x: evt.pageX,
+          y: evt.pageY
+        }
+        this.zoom(this.mouse.current.x , this.mouse.previous.x)
+      }
+      evt.preventDefault()
+    },
+    doScroll: function(evt){
+      var delta = Math.max(-1, Math.min(1, (evt.wheelDelta || -evt.detail)))
+      this.zoom(delta , 0)
+      evt.preventDefault()
+    },
+    zoom:function(x1,x2){
+      if( x1 > x2 ){
+        if(this.boxes.viewcnt > 1){
+          this.boxes.viewcnt--
+          this.draw()
+        }
+      }else{
+        if(this.boxes.viewcnt < this.boxes.count){
+          this.boxes.viewcnt++
+          this.draw()
+        }
+      }
+    },
+    drawline: function(strokestyle, linewidth, x1, y1, x2, y2){
+      if(!this.canvas.context) return
+      const ctx = this.canvas.context
+      ctx.beginPath()
+      ctx.strokeStyle = strokestyle
+      ctx.lineWidth = linewidth
+      ctx.moveTo( x1, y1)
+      ctx.lineTo( x2, y2)
+      ctx.stroke()
+    },
+    drawrect: function(strokestyle, linewidth, fillStyle, x, y, w, h){
+      if(!this.canvas.context) return
+      const ctx = this.canvas.context
+      ctx.beginPath()
+      ctx.strokeStyle = strokestyle
+      ctx.lineWidth = linewidth
+      ctx.strokeRect(x, y, w, h)
+      ctx.rect(x, y, w, h)
+      ctx.fillStyle = fillStyle
+      ctx.fill()
+    },
+    clearcanvas: function(){
+      if(!this.canvas.context) return
+      const ctx = this.canvas.context
+      
       ctx.clearRect(0,0,this.canvas.w,this.canvas.h)
-
-      /** Draw Bar */
-      boxes.forEach((el,index) =>{
-        el.w = this.canvas.sw /this.viewcount
-        el.h = - (this.canvas.sh* (el.v/this.boxesStat.max))
+      /** X & Y axis */
+      /** X axis */
+      this.drawline(
+        "#000000",
+        2,
+        this.canvas.sw + this.canvas.sx,
+        0 + this.canvas.sy,
+        this.canvas.sw + this.canvas.sx,
+        this.canvas.sh + this.canvas.sy
+      )
+      /** Y axis */
+      this.drawline(
+        "#000000",
+        2,
+        this.canvas.sw + this.canvas.sx,
+        this.canvas.sh + this.canvas.sy,
+        this.canvas.sx,
+        this.canvas.sh + this.canvas.sy
+      )
+    },
+    clearchart: function(){
+      if(!this.canvas.context) return
+      const ctx = this.canvas.context
+      ctx.clearRect(this.canvas.sx,this.canvas.sy,this.canvas.sw,this.canvas.sh)
+    },
+    initBoxes: function(){
+      /** Set Graph Data for Canvas */
+      this.boxes.val.length = 0
+      this.boxes.max = 0
+      this.$parent.chartValues.forEach((el,index) => {
+        if(this.boxes.count - index <= this.boxes.viewcnt){
+          if(this.boxes.max < el.val){
+            this.boxes.max = el.val
+          }
+          this.boxes.val.push(  { v:el.val, name:el.name, x : null , y : null , w: null , h: null })
+        }
+      })
+    },
+    drawBarGraph: function () {
+      if(!this.canvas.context) return
+      const ctx = this.canvas.context
+      /** Draw Bar Graph*/
+      this.boxes.val.forEach((el,index) =>{
+        el.w = this.canvas.sw /this.boxes.viewcnt
+        el.h = - (this.canvas.sh* (el.v/this.boxes.max))
         el.x = (index*el.w) + this.canvas.sx
         el.y = this.canvas.sh + this.canvas.sy
-        ctx.beginPath()
-        ctx.strokeStyle="#888888"
-        ctx.strokeRect(el.x, el.y, el.w, el.h)
-        ctx.rect(el.x, el.y, el.w, el.h)
-        ctx.fillStyle = 'rgba(90, 120, 10, 0.5)'
-        ctx.fill()
+        if(this.boxes.selected.index === index){
+          this.drawrect(
+            "#FF0000", 
+            1, 
+            'rgba(190, 20, 0, 0.5)',
+            el.x, 
+            el.y, 
+            el.w, 
+            el.h
+          )
+          //Selected Guide line
+          this.drawline(
+            '#FF0000',
+            2,
+            el.x + el.w, 
+            el.y  + el.h,
+            el.x + el.w + this.canvas.sw - (el.w *(index+1)),
+            el.y  + el.h 
+          )
+        }else{  
+          this.drawrect(
+            "#888888", 
+            1, 
+            'rgba(90, 120, 10, 0.5)',
+            el.x, 
+            el.y, 
+            el.w, 
+            el.h
+          )
+          this.drawline(
+            '#FFFFFF',
+            2,
+            el.x + el.w, 
+            el.y + el.h,
+            el.x + el.w + this.canvas.sw - (el.w *(index+1)),
+            el.y  + el.h 
+          )
+        }
       })
+    },
+    draw: function () {
+      if(!this.canvas.context) return
+      const ctx = this.canvas.context
 
-      ctx.beginPath()
-      ctx.strokeStyle = "#000000"
-      ctx.moveTo( this.canvas.sx,this.canvas.sy)
-      ctx.lineTo( this.canvas.sx,this.canvas.h-this.canvas.sy)
-      ctx.lineTo( this.canvas.w-this.canvas.sx, this.canvas.h-this.canvas.sy)
-      ctx.stroke()
-      
-      // /** X & Y Axis Background */
-      // ctx.strokeStyle = "#eeeeee"
-      // var bglinecnt = 20
-      // ctx.beginPath()
-      // for(var i = 0 ; i < bglinecnt ; i++){      
-      //   ctx.moveTo( this.canvas.sx+ (this.canvas.sw*i/bglinecnt),this.canvas.sy)
-      //   ctx.lineTo( this.canvas.sx+ (this.canvas.sw*i/bglinecnt),this.canvas.h-this.canvas.sy)
-      // }
-      //ctx.stroke()
-
+      /** Clear Canvas and Draw X&Y Axis  */
+      this.clearcanvas()
+      /** Init Graph Data  */
+      this.initBoxes()
+      /** Draw Bar Graph */
+      this.drawBarGraph()
       /** 수치 입력 */
       ctx.beginPath()
+
+
+
+
+
       ctx.fillStyle = '#000'
       ctx.textAlign = 'center'
-      boxes.forEach((el,index) =>{
-        el.w = this.canvas.sw /this.viewcount
-        el.h = - (this.canvas.sh* (el.v/this.boxesStat.max))
+      this.boxes.val.forEach((el,index) =>{
+        el.w = this.canvas.sw /this.boxes.viewcnt
+        el.h = - (this.canvas.sh* (el.v/this.boxes.max))
         el.x = (index*el.w) + this.canvas.sx
         el.y = this.canvas.sh + this.canvas.sy
-        if( index % (Math.floor(this.viewcount/10) + 1) === 0){
+        if( index % (Math.floor(this.boxes.viewcnt/10) + 1) === 0){
           if(el.name.length <= 10){
             ctx.font = '14px NanumGothic'
             ctx.fillText(el.name,el.x + (el.w/2), el.y + (this.canvas.sy/2) -10 )
           }else{
-            ctx.font = '12px NanumGothic'
+            ctx.font = '14px NanumGothic'
             ctx.fillText(el.name.substring(0,10)+'...',el.x + (el.w/2), el.y + (this.canvas.sy/2) -10 )
           }
         }
       })
       for(var i = 1 ; i <= 6 ; i++){
+        //Y Axis amount
         ctx.fillStyle = '#000'
-        ctx.font = '12px NanumGothic'
-        ctx.textAlign = 'right'
-        ctx.fillText((this.boxesStat.max *(i/6)).toFixed(2) ,this.canvas.sx -5, this.canvas.sh*((7-i)/6)-10)
-        
-        ctx.beginPath()
-        ctx.strokeStyle = "#bbbbbb"
-        ctx.moveTo( this.canvas.sx,this.canvas.sh*((7-i)/6)-20)
-        ctx.lineTo( this.canvas.w-this.canvas.sx,this.canvas.sh*((7-i)/6)-20)
-        ctx.stroke()
+        ctx.font = '14px NanumGothic'
+        ctx.textAlign = 'left'
+        ctx.fillText((this.boxes.max *(i/6)).toFixed(2) ,(this.canvas.w-this.canvas.sx) +5, this.canvas.sh*((7-i)/6)-10)
+        //Y Axis Guide line
+        this.drawline(
+          '#bbbbbb',
+          1,
+          this.canvas.sx,
+          this.canvas.sh*((7-i)/6)-20,
+          this.canvas.w-this.canvas.sx,
+          this.canvas.sh*((7-i)/6)-20 
+        )
       }
     }
-  },
-  //Allows any child component to 'inject:['provider'] and have access to it.
-  provide () {
-    return {
-      canvas : this.canvas
-    }
-  },
-  mounted () {
-
-    // We  can't access  the rendering  context until the canvas is mounted to the DOM.
-    // Once we have it,  provide it to all child components
-    this.canvas.context = this.$refs['ksh-canvas'].getContext('2d')
-    // // Resize the canvas to fit its parent's  width.
-    // // Normally you'd use a more flexible resize system
-    this.canvas.w = this.$refs['ksh-canvas'].parentElement.clientWidth
-    this.canvas.h = this.$refs['ksh-canvas'].parentElement.clientHeight
-
-    this.$refs['ksh-canvas'].width  = this.canvas.w
-    this.$refs['ksh-canvas'].height  = this.canvas.h
-
   }
 }
 
-var doScroll = function (e) {
-    // cross-browser wheel delta
-    e = window.event || e;
-    var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)))
-    // Do something with `delta`
-    console.log(delta)
-    e.preventDefault();
-};
-
-if (window.addEventListener) {
-    window.addEventListener("mousewheel", doScroll, false);
-    window.addEventListener("DOMMouseScroll", doScroll, false);
-} else {
-    window.attachEvent("onmousewheel", doScroll);
-}
 </script>
 <style scoped>
 canvas {
